@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajax</title>
+</head>
+<body>
+<button id="press" name="press">Bouton</button>
+<button id="update" name="update">Update code postal</button>
+<div id="login"></div>
+<div id="passwords"></div>
+<div id="nomCommune"></div>
+<input type="text" id="codePostal" placeholder="code postal">
+<div id="codeDepartement"></div>
+<input type="text" id="mail" placeholder="mail">
+<button id="insert" name="insert">Update mail</button>
+<img id="image" src="" alt="Generated Image">
+<input type="range" id="range" value="12" min="6" max="20">
+
+<script>
+
+    document.getElementById('press').addEventListener('click', function() {
+        // password
+        fetch('https://api.motdepasse.xyz/create/?include_lowercase&password_length=12&quantity=1')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(passwordData) {
+                console.log(passwordData.passwords);
+                document.getElementById("passwords").innerText = "Password: " + passwordData.passwords[0];
+            });
+
+        // image
+        fetch('https://yesno.wtf/api')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(imageData) {
+                console.log(imageData.image);
+                document.getElementById("image").src = imageData.image;
+            });
+    });
+
+    // Mettre à jour le code postal dans l'input texte
+    document.getElementById('press').addEventListener('click', function () {
+        document.getElementById("codePostal").value = "78000";
+    });
+
+    document.getElementById('range').addEventListener('input', function() {
+        let passwordLength = document.getElementById('range').value;
+        fetch(`https://api.motdepasse.xyz/create/?include_lowercase&password_length=${passwordLength}&quantity=1`)
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(passwordData) {
+                console.log(passwordData.passwords);
+                document.getElementById("passwords").innerText = "Password: " + passwordData.passwords[0];
+            });
+    });
+
+    document.getElementById('press').addEventListener('click', function() {
+        fetch("http://localhost/www/symphony/ajax/data.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "login": "Selena",
+                "password": document.querySelector('#passwords').value
+            })
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(function (data) {
+                console.log('Data sent successfully:', data);
+            })
+            .catch(function (error) {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    });
+
+    document.getElementById('press').addEventListener('click', function () {
+        fetch("https://geo.api.gouv.fr/communes?codePostal=78000")
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(CodeData) {
+                var nomCommune = CodeData[0].nom;
+                var codeDepartement = CodeData[0].codeDepartement;
+
+                document.getElementById("nomCommune").innerText = "Commune: " + nomCommune;
+                document.getElementById("codePostal").value = "78000";
+                document.getElementById("codeDepartement").innerText = "Code Département: " + codeDepartement;
+            })
+            .catch(function(error) {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    });
+
+    document.getElementById('insert').addEventListener('click', function () {
+        // Récupérer la valeur de l'adresse e-mail
+        var email = document.getElementById('mail').value;
+
+        // Effectuer une requête AJAX pour insérer l'adresse e-mail dans la base de données
+        fetch("http://localhost/www/symphony/ajax/insert.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "email": email
+            })
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(function (data) {
+                console.log('Data inserted successfully:', data);
+                // Afficher un message de confirmation ou effectuer d'autres actions si nécessaire
+            })
+            .catch(function (error) {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    });
+
+</script>
+</body>
+</html>
